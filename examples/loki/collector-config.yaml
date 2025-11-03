@@ -10,16 +10,21 @@ receivers:
       filename: "./audit_logs_poll_data.json"
 
 exporters:
-  loki:
-    endpoint: http://localhost:3100/loki/api/v1/push
+  otlphttp/loki:
+    endpoint: http://localhost:3100/otlp
 
 processors:
-  attributes: 
-    actions:
-      - action: insert
-        key: loki.attribute.labels
-        value: id, initiatedBy, eventType, labels.ClusterId
+  transform:
+    log_statements:
+      - context: log
+        statements:
+          - set(resource.attributes["eventType"], attributes["eventType"]) where attributes["eventType"] != nil
+          - set(resource.attributes["id"], attributes["id"]) where attributes["id"] != nil
+          - set(resource.attributes["initiatedBy"], attributes["initiatedBy"]["id"]) where attributes["initiatedBy"]["id"] != nil
+          - set(resource.attributes["clusterId"], attributes["labels"]["clusterId"]) where attributes["labels"]["clusterId"] != nil
 
+          # Convert all attributes to JSON string and set as body.
+          - set(body, attributes)
 service:
   telemetry:
     logs:
@@ -27,5 +32,5 @@ service:
   pipelines:
     logs:
       receivers: [castai_audit_logs]
-      processors: [attributes]
-      exporters: [loki]
+      processors: [transform]
+      exporters: [otlphttp/loki]

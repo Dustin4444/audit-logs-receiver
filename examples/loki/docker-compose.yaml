@@ -4,7 +4,7 @@ networks:
 
 services:
   loki:
-    image: grafana/loki:2.8.0
+    image: grafana/loki:3.5.7
     volumes:
       - ./loki-config.yaml:/etc/loki/loki-config.yaml
     ports:
@@ -14,7 +14,7 @@ services:
       - loki
 
   promtail:
-    image: grafana/promtail:2.8.0
+    image: grafana/promtail:3.5.3
     volumes:
       - /var/log:/var/log
     command: -config.file=/etc/promtail/config.yml
@@ -22,6 +22,7 @@ services:
       - loki
 
   grafana:
+    image: grafana/grafana:latest
     environment:
       - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
       - GF_AUTH_ANONYMOUS_ENABLED=true
@@ -45,7 +46,6 @@ services:
           editable: false
         EOF
         /run.sh
-    image: grafana/grafana:latest
     ports:
       - "3000:3000"
     networks:

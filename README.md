@@ -99,26 +99,34 @@ Default image used in chart, which is `us-docker.pkg.dev/castai-hub/library/audi
 
 Example Helm install with Loki configuration:
   * create your custom `values.yaml` with pipeline setup from [./examples/loki/collector-config.yaml](./examples/loki/collector-config.yaml):  
+  * Make sure your loki config has `resource_attributes` set so they become labels in Loki to filter by : [./examples/loki/loki-config.yaml](./examples/loki/loki-config.yaml):
 ```shell
 # values.yaml
 config:
   exporters:
-    loki:
-      endpoint: http://localhost:3100/loki/api/v1/push
+    otlphttp/loki:
+      endpoint: http://localhost:3100/otlp
 
   processors:
-    attributes: 
-      actions:
-        - action: insert
-          key: loki.attribute.labels
-          value: id, initiatedBy, eventType, labels.ClusterId
+    transform:
+      log_statements:
+        - context: log
+          statements:
+            # Move to resource attributes (these become Loki labels)
+            - set(resource.attributes["eventType"], attributes["eventType"]) where attributes["eventType"] != nil
+            - set(resource.attributes["id"], attributes["id"]) where attributes["id"] != nil
+            - set(resource.attributes["initiatedBy"], attributes["initiatedBy"]["id"]) where attributes["initiatedBy"]["id"] != nil
+            - set(resource.attributes["clusterId"], attributes["labels"]["clusterId"]) where attributes["labels"]["clusterId"] != nil
+  
+            # Convert all attributes to JSON string and set as body (always)
+            - set(body, attributes)
 
   service:
     pipelines:
       logs:
         receivers: [castai_audit_logs]
-        processors: [attributes]
-        exporters: [loki]
+        processors: [transform]
+        exporters: [otlphttp/loki]
 ```
 * deploy chart with `--values` flag set to `values.yaml`:
 ```shell

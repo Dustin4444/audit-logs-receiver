@@ -1,5 +1,5 @@
 FROM alpine:latest
-RUN apk --update add ca-certificates
+RUN apk --update upgrade && apk add ca-certificates
 ARG TARGETARCH
 COPY collector-config.yaml /etc/otel/config.yaml
 COPY castai-collector/castai-collector-$TARGETARCH /castai-collector

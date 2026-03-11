@@ -104,7 +104,7 @@ Example Helm install with Loki configuration:
 # values.yaml
 config:
   exporters:
-    otlphttp/loki:
+    otlp_http/loki:
       endpoint: http://localhost:3100/otlp
 
   processors:
@@ -117,7 +117,7 @@ config:
             - set(resource.attributes["id"], attributes["id"]) where attributes["id"] != nil
             - set(resource.attributes["initiatedBy"], attributes["initiatedBy"]["id"]) where attributes["initiatedBy"]["id"] != nil
             - set(resource.attributes["clusterId"], attributes["labels"]["clusterId"]) where attributes["labels"]["clusterId"] != nil
-  
+
             # Convert all attributes to JSON string and set as body (always)
             - set(body, attributes)
 
@@ -126,7 +126,7 @@ config:
       logs:
         receivers: [castai_audit_logs]
         processors: [transform]
-        exporters: [otlphttp/loki]
+        exporters: [otlp_http/loki]
 ```
 * deploy chart with `--values` flag set to `values.yaml`:
 ```shell

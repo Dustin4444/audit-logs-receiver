@@ -20,13 +20,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Setup Go 1.25.3
+      - name: Setup Go 1.26.1
         uses: actions/setup-go@v5
         with:
-          go-version: 1.25.3
+          go-version: 1.26.1
 
       - name: Install dependency
-        run: go install go.opentelemetry.io/collector/cmd/builder@v0.138.0
+        run: go install go.opentelemetry.io/collector/cmd/builder@v0.147.0
 
       - name: Get release tag
         if: github.event_name == 'release'
